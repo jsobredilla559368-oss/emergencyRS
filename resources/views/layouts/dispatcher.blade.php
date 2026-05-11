@@ -146,5 +146,44 @@
     </div>
 
     @stack('scripts')
+
+    {{-- Real-time polling for new alerts --}}
+    <script>
+        let lastNotificationCount = {{ \App\Models\IncidentNotification::where('user_id', auth()->id())->whereNull('read_at')->count() }};
+        
+        function checkNewAlerts() {
+            fetch('{{ route('notifications.index') }}') // Simplest way to check without new routes
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newCount = doc.querySelectorAll('.notification-item.unread').length; // Assuming there's a list
+
+                    // Or better, just check the red dot status via a dedicated endpoint if possible.
+                    // For now, let's just do a simple refresh check of the bell icon.
+                    const bellContainer = document.querySelector('.topbar-right');
+                    if (bellContainer) {
+                        const newDot = doc.querySelector('.topbar-icon-btn span');
+                        const currentDot = bellContainer.querySelector('.topbar-icon-btn span');
+                        
+                        if (newDot && !currentDot) {
+                            // Play sound and show dot
+                            playNotificationSound();
+                            const span = document.createElement('span');
+                            span.style.cssText = "position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: var(--accent-violet); border-radius: 50%; border: 2px solid var(--bg-panel);";
+                            bellContainer.querySelector('.topbar-icon-btn').appendChild(span);
+                        }
+                    }
+                });
+        }
+
+        function playNotificationSound() {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log('Audio play blocked by browser'));
+        }
+
+        // Poll every 10 seconds
+        setInterval(checkNewAlerts, 10000);
+    </script>
 </body>
 </html>

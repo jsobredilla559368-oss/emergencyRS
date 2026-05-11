@@ -67,6 +67,17 @@ class ReporterController extends Controller
             }
         }
 
+        // Notify Dispatchers and Admins
+        $dispatchers = User::whereIn('role', ['admin', 'dispatcher'])->get();
+        foreach ($dispatchers as $dispatcher) {
+            \App\Models\IncidentNotification::create([
+                'incident_id' => $incident->id,
+                'user_id'     => $dispatcher->id,
+                'title'       => 'New Emergency Report',
+                'message'     => strtoupper($incident->type) . ' reported at ' . ($incident->location_address ?? 'Unknown Location'),
+            ]);
+        }
+
         return redirect()->route('reporter.track', ['id' => 'INC-' . str_pad($incident->id, 4, '0', STR_PAD_LEFT)])
             ->with('success', 'Emergency report submitted successfully.');
     }
