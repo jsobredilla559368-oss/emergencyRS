@@ -64,13 +64,14 @@ RUN php artisan config:clear \
 # Create storage symlink
 RUN php artisan storage:link || true
 
-# Fix permissions
+# Fix permissions and make start script executable
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache public/uploads \
     && chown -R www-data:www-data storage bootstrap/cache public/uploads \
-    && chmod -R 775 storage bootstrap/cache public/uploads
+    && chmod -R 775 storage bootstrap/cache public/uploads \
+    && chmod +x /var/www/html/start.sh
 
 # Expose port
 EXPOSE 10000
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start application via start script
+CMD ["/var/www/html/start.sh"]
