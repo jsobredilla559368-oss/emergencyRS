@@ -82,6 +82,7 @@
                 <button type="submit" style="width:100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-size:13px;">Sign out</button>
             </form>
         </div>
+    </aside>
     <div class="sidebar-overlay" onclick="document.body.classList.remove('sidebar-open')"></div>
 
     <div class="main-content">
